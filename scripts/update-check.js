@@ -18,8 +18,9 @@ export const BRANCH_MCP = 'main';
 export const REPO_RULE = 'lacvietanh/akidevrule';
 export const BRANCH_RULE = 'master';
 
-const MCP_PKG_URL = `https://raw.githubusercontent.com/${REPO_MCP}/${BRANCH_MCP}/package.json`;
-const RULE_CHANGELOG_URL = `https://raw.githubusercontent.com/${REPO_RULE}/${BRANCH_RULE}/CHANGELOG.md`;
+const RAW_BASE = 'https://raw.githubusercontent.com/';
+const MCP_PKG_URL = RAW_BASE + REPO_MCP + '/' + BRANCH_MCP + '/package.json';
+const RULE_CHANGELOG_URL = RAW_BASE + REPO_RULE + '/' + BRANCH_RULE + '/CHANGELOG.md';
 
 // Newest released version in a keep-a-changelog file: the first `## [x.y.z]` heading, skipping the `[Unreleased]` buffer. akidevrule has no version field, so its CHANGELOG is the SSoT.
 export function parseChangelogVersion(text) {

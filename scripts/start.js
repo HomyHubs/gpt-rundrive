@@ -70,7 +70,7 @@ if (tunnelCred) {
       console[ok ? 'log' : 'error'](`[start] enabling funnel ${gatePort}: ${ok ? 'done' : out.trim()}`);
     }
   }
-  origin = tailscale.host ? `https://${tailscale.host}` : null;
+  origin = tailscale.host ? 'https://' + tailscale.host : null;
   if (!origin) console.error('[start] could not get the MagicDNS name — run `tailscale status` to look up the URL yourself');
 }
 
