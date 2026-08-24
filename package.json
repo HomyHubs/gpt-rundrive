@@ -1,0 +1,19 @@
+{
+  "name": "gpt-rundrive",
+  "version": "1.11.0",
+  "private": true,
+  "description": "Give ChatGPT/Claude on the web local filesystem/search/shell access over OAuth 2.1 MCP, plus a run_test tool for a run/fix/re-run loop. Fork of lacvietanh/aki-mcp-sv.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": "22.14.0"
+  },
+  "scripts": {
+    "start": "node ./scripts/start.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "diff": "^8.0.3",
+    "zod": "^3.23.8"
+  }
+}
