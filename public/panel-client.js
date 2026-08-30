@@ -1,5 +1,3 @@
-document.getElementById('year').textContent = new Date().getFullYear();
-
 const toTop = document.getElementById('toTop');
 toTop.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 addEventListener('scroll', () => toTop.classList.toggle('show', window.scrollY > 400), { passive: true });
@@ -80,7 +78,7 @@ function buildPrompt() {
   const rulesOn = document.getElementById('loadRules').checked;
   const hasIndex = [...document.querySelectorAll('#ruleChecks input')].some((i) => i.value === 'index.md');
   if (rulesOn && !hasIndex) {
-    lines.push('Rules not installed: ask the user to press Install/update in the Aki panel (section 2) before starting.');
+    lines.push('No rule files are installed; continue without loading rule files.');
   }
   lines.push('Task (mutate/multi-step): confirm scope; plan $HOME/.aki/mcpsv/task/<id>/plan.md (live); reply path on create. Skip pure Q&A. <id>=short slug.');
   lines.push('Files: always find_path (1 call, whole tree ~0.2s), never list_directory nor search_files. Text: search_content. git/ls/grep: run_cmd cwd=absolute under an allowed root, never cd/-C.');
@@ -231,7 +229,7 @@ function renderRuleChecks(files) {
   const checks = document.getElementById('ruleChecks');
   checks.innerHTML = '';
   if (!files.length) {
-    checks.innerHTML = '<span class="empty">akidevrule isn\'t installed yet; install it in section 2 above, or skip and use the prompt without rules.</span>';
+    checks.innerHTML = '<span class="empty">No rule files are installed; the prompt can still be used without rules.</span>';
     return;
   }
   // index.md is the rule map — always first, and locked so it can't be unchecked.
@@ -304,7 +302,7 @@ const ACTIONS = {
   savePaths: (btn) => act(btn, 'msgPaths', async () => {
     const paths = [...document.querySelectorAll('#paths input')].map((i) => i.value.trim()).filter(Boolean);
     if (!paths.length) throw new Error('an empty list cuts off all of Claude\'s file access; add at least one folder');
-    // Case-insensitive by full path, matching section 6's already-sorted chips — one sort rule shared by both list editors. Locked rows sort in place with the rest.
+    // Case-insensitive by full path, matching section 5's already-sorted chips — one sort rule shared by both list editors. Locked rows sort in place with the rest.
     paths.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
     const { message } = await api('POST', '/api/paths', { paths });
     btn.classList.remove('primary');
@@ -358,7 +356,7 @@ const ACTIONS = {
     const { message } = await api('POST', '/api/install-rules');
     renderRuleChecks((await api('GET', '/api/state')).ruleFiles);
     buildPrompt();
-    // The banner and section-3 warning both claimed a stale corpus; the update just cleared it.
+    // The update banner claimed a stale corpus; the update just cleared it.
     document.querySelector('.updrule')?.remove();
     document.getElementById('s3warn')?.remove();
     if (!document.querySelector('.updbar .updrow')) document.querySelector('.updbar')?.remove();
@@ -396,19 +394,8 @@ function updateDomainPrice() {
 document.getElementById('tldSelect').onchange = updateDomainPrice;
 updateDomainPrice();
 
-const DONATE_QR = {
-  momo: { src: '/QR-Aki.MOMO.jpg', alt: 'MoMo donate QR' },
-  paypal: { src: '/QR-AkiTao-PayPal.png', alt: 'PayPal donate QR' },
-};
-document.querySelectorAll('.qr-tab').forEach((btn) => (btn.onclick = () => {
-  const q = DONATE_QR[btn.dataset.qr];
-  const img = document.getElementById('donateQr');
-  img.src = q.src; img.alt = q.alt;
-  document.querySelectorAll('.qr-tab').forEach((b) => b.classList.toggle('active', b === btn));
-}));
-
 renderSavedIngress(SAVED_INGRESS);
 
 // One failed /api/state leaves three sections blank, so the failure is reported next to each of them.
-loadState().catch((e) => ['msgPaths', 'msgAllow', 'msgTrusted', 'msgRules'].forEach((id) => say(id, e.message, false)));
+loadState().catch((e) => ['msgPaths', 'msgAllow', 'msgTrusted'].forEach((id) => say(id, e.message, false)));
 loadTailscale().then((m) => say('msgTs', m, m.startsWith('ready'))).catch((e) => say('msgTs', e.message, false));
