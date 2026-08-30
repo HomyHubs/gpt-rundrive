@@ -2,26 +2,53 @@ const toTop = document.getElementById('toTop');
 toTop.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 addEventListener('scroll', () => toTop.classList.toggle('show', window.scrollY > 400), { passive: true });
 
-// Spy-TOC rail: built from the sections themselves (SSoT), so numbers/labels never drift from the page.
+// Spy-TOC rail: labels come from the visible headers, while links use the matching section IDs.
 const spy = document.getElementById('spy');
 const spySecs = [...document.querySelectorAll('main section[id]')];
 const spyLinks = {};
 spySecs.forEach((sec) => {
+  const heading = (sec.querySelector('h2')?.textContent || '').replace(/\s+(done|optional)$/i, '').trim();
   const a = document.createElement('a');
   a.href = '#' + sec.id;
-  a.textContent = sec.id.replace('s', '');
-  a.title = (sec.querySelector('h2')?.textContent || sec.id).replace(/\s+(done|optional)$/i, '').trim();
+  a.textContent = heading.match(/^(\d+)\s*·/)?.[1] || sec.id.replace(/^s/, '');
+  a.title = heading || sec.id;
+  a.onclick = (event) => {
+    event.preventDefault();
+    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    history.replaceState(null, '', '#' + sec.id);
+  };
   spy.append(a);
   spyLinks[sec.id] = a;
 });
-const spyObs = new IntersectionObserver((entries) => {
-  entries.forEach((e) => {
-    if (!e.isIntersecting) return;
-    for (const a of Object.values(spyLinks)) a.classList.remove('active');
-    spyLinks[e.target.id]?.classList.add('active');
+
+// IntersectionObserver could select the wrong item when a section was taller than the viewport,
+// several entries changed in one callback, or the last section could not reach the tiny center band.
+// Pick the last heading above a stable viewport marker instead, and force the last item at page end.
+function updateSpy() {
+  if (!spySecs.length) return;
+  const marker = Math.min(window.innerHeight * 0.35, 240);
+  let active = spySecs[0];
+  for (const sec of spySecs) {
+    if (sec.getBoundingClientRect().top <= marker) active = sec;
+    else break;
+  }
+  if (Math.ceil(window.scrollY + window.innerHeight) >= document.documentElement.scrollHeight - 2) {
+    active = spySecs[spySecs.length - 1];
+  }
+  for (const [id, a] of Object.entries(spyLinks)) a.classList.toggle('active', id === active.id);
+}
+
+let spyFrame = null;
+function scheduleSpyUpdate() {
+  if (spyFrame !== null) return;
+  spyFrame = requestAnimationFrame(() => {
+    spyFrame = null;
+    updateSpy();
   });
-}, { rootMargin: '-45% 0px -50% 0px' });
-spySecs.forEach((s) => spyObs.observe(s));
+}
+addEventListener('scroll', scheduleSpyUpdate, { passive: true });
+addEventListener('resize', scheduleSpyUpdate);
+updateSpy();
 
 async function api(method, path, body) {
   let res;
