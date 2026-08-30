@@ -69,7 +69,7 @@ export function loadFolders() {
   return [...new Set(resolved)];
 }
 
-// Second, directory-scoped trust mechanism alongside the name allowlist: any executable/script under these zones may run without a per-file entry, so new Andy MCP skills/scripts don't need a settings edit each time. Zones Aki owns end-to-end; whitelisting individual files inside them is the wrong grain (docs/plan/shell-allowlist.md).
+// Second, directory-scoped trust mechanism alongside the name allowlist: any executable/script under these zones may run without a per-file entry, so new Andy MCP skills/scripts don't need a settings edit each time. Zones Andy MCP owns end-to-end; whitelisting individual files inside them is the wrong grain (docs/plan/shell-allowlist.md).
 const DEFAULT_ALLOWLIST_DIRS = ['~/.andymcp', '~/.claude'];
 const expandTilde = (p) => (p === '~' ? os.homedir() : /^~[/\\]/.test(p) ? path.join(os.homedir(), p.slice(2)) : p);
 
