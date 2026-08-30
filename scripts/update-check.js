@@ -5,13 +5,13 @@ import path from 'node:path';
 import https from 'node:https';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { USER_DIR, RULES_DIR } from './userdata.js';
+import { RULES_DIR, STATUS_PATH } from './userdata.js';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const RULE_CHANGELOG = path.join(RULES_DIR, 'CHANGELOG.md');
 
-// Lives under this app's USER_DIR so the pasted instructions and the writer share one path.
-export const STATUS_PATH = path.join(USER_DIR, 'andy-mcp-status.json');
+// Keep the existing module export stable while userdata.js owns the single path definition.
+export { STATUS_PATH };
 export const REPO_MCP = 'lacvietanh/aki-mcp-sv';
 export const BRANCH_MCP = 'main';
 export const REPO_RULE = 'lacvietanh/akidevrule';
