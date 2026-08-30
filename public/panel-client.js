@@ -1,5 +1,3 @@
-document.getElementById('year').textContent = new Date().getFullYear();
-
 const toTop = document.getElementById('toTop');
 toTop.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 addEventListener('scroll', () => toTop.classList.toggle('show', window.scrollY > 400), { passive: true });
@@ -231,7 +229,7 @@ function renderRuleChecks(files) {
   const checks = document.getElementById('ruleChecks');
   checks.innerHTML = '';
   if (!files.length) {
-    checks.innerHTML = '<span class="empty">akidevrule isn\'t installed yet; install it in section 2 above, or skip and use the prompt without rules.</span>';
+    checks.innerHTML = '<span class="empty">No rule files are installed; the prompt can still be used without rules.</span>';
     return;
   }
   // index.md is the rule map — always first, and locked so it can't be unchecked.
@@ -396,19 +394,8 @@ function updateDomainPrice() {
 document.getElementById('tldSelect').onchange = updateDomainPrice;
 updateDomainPrice();
 
-const DONATE_QR = {
-  momo: { src: '/QR-Aki.MOMO.jpg', alt: 'MoMo donate QR' },
-  paypal: { src: '/QR-AkiTao-PayPal.png', alt: 'PayPal donate QR' },
-};
-document.querySelectorAll('.qr-tab').forEach((btn) => (btn.onclick = () => {
-  const q = DONATE_QR[btn.dataset.qr];
-  const img = document.getElementById('donateQr');
-  img.src = q.src; img.alt = q.alt;
-  document.querySelectorAll('.qr-tab').forEach((b) => b.classList.toggle('active', b === btn));
-}));
-
 renderSavedIngress(SAVED_INGRESS);
 
 // One failed /api/state leaves three sections blank, so the failure is reported next to each of them.
-loadState().catch((e) => ['msgPaths', 'msgAllow', 'msgTrusted', 'msgRules'].forEach((id) => say(id, e.message, false)));
+loadState().catch((e) => ['msgPaths', 'msgAllow', 'msgTrusted'].forEach((id) => say(id, e.message, false)));
 loadTailscale().then((m) => say('msgTs', m, m.startsWith('ready'))).catch((e) => say('msgTs', e.message, false));
