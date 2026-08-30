@@ -17,6 +17,7 @@ export const PASSPHRASE_PATH = path.join(USER_DIR, 'passphrase.txt');
 export const TOKENS_PATH = path.join(USER_DIR, 'tokens.json');
 export const INGRESS_CONFIG_PATH = path.join(USER_DIR, 'ingress.json');
 export const CLOUDFLARED_CRED_PATH = path.join(USER_DIR, 'cloudflared-cred.json');
+export const STATUS_PATH = path.join(USER_DIR, 'andy-mcp-status.json');
 
 mkdirSync(APP_HOME, { recursive: true, mode: 0o700 });
 
@@ -30,11 +31,18 @@ const legacyDirs = [
 ];
 for (const [source, destination] of legacyDirs) {
   if (!existsSync(destination) && existsSync(source)) {
-    cpSync(source, destination, { recursive: true });
+    const temporary = `${destination}.migrate-${process.pid}`;
+    cpSync(source, temporary, { recursive: true });
+    renameSync(temporary, destination);
     console.log(`[userdata] copied legacy data: ${source} → ${destination}`);
   }
 }
 mkdirSync(USER_DIR, { recursive: true, mode: 0o700 });
+
+// The legacy status snapshot is safe to rename inside the copied destination; its original still
+// remains under ~/.aki, while the new directory contains only the Andy-branded filename.
+const copiedLegacyStatus = path.join(USER_DIR, 'aki-mcp-status.json');
+if (!existsSync(STATUS_PATH) && existsSync(copiedLegacyStatus)) renameSync(copiedLegacyStatus, STATUS_PATH);
 
 const absoluteMigrationPairs = legacyDirs.map(([source, destination]) => [source, destination])
   .concat([[LEGACY_APP_HOME, APP_HOME]]);
