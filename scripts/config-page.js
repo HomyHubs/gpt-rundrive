@@ -229,7 +229,7 @@ ${field('Widen command', WIDEN_SNIPPET)}
 </div>
 
 <h3 class="subh">Trusted script directories</h3>
-<p class="helptext">Scripts under these folders run without a command row above, for Aki-authored skills and scripts. A folder that overlaps a writable folder from section 4 is disabled (write + run = code execution).</p>
+<p class="helptext">Scripts under these folders run without a command row above, for Andy MCP-authored skills and scripts. A folder that overlaps a writable folder from section 4 is disabled (write + run = code execution).</p>
 <div class="flist" id="trustedDirs"></div>
 <div class="acts">
   <button class="primary" data-act="addTrusted">+ Add directory…</button>
