@@ -58,7 +58,7 @@ if (tunnelCred) {
   ingressMode = 'funnel';
   let tailscale = await funnelStatus(gatePort);
   if (!tailscale.installed) {
-    console.error('[start] could not run `tailscale` — check it is installed and logged in: https://tailscale.com/download');
+    console.error('[start] could not find `tailscale` in PATH or the standard Windows install folders — install it or set TAILSCALE_BIN: https://tailscale.com/download');
   } else {
     if (!tailscale.running) {
       const { ok, out } = await bringUp();
@@ -131,16 +131,42 @@ try {
   shutdown();
 }
 
-panel = startPanel({ port: Number(panelPort), token: panelToken, origin, ingress: ingressMode, client, passphrase, updateInfo });
-const panelUrl = `http://127.0.0.1:${panelPort}/?t=${panelToken}`;
-// Escape hatch for automated runs (bootstrap smoke tests) that must not pop a browser window — off by default, normal `npm start` is unaffected.
-if (process.env.MCP_SKIP_BROWSER_OPEN) {
-  console.log(`[start] MCP_SKIP_BROWSER_OPEN set — not opening a browser (panel: ${panelUrl})`);
-} else {
-  try {
-    await openBrowser(panelUrl);
-  } catch (e) {
-    console.error(`[start] could not auto-open the panel (open manually: ${panelUrl}): ${e.message}`);
+try {
+  panel = await startPanel({
+    port: Number(panelPort),
+    token: panelToken,
+    origin,
+    ingress: ingressMode,
+    client,
+    passphrase,
+    updateInfo,
+    onFatal: () => {
+      process.exitCode = 1;
+      shutdown();
+    },
+  });
+} catch (e) {
+  if (e.code === 'EADDRINUSE') {
+    console.error(`[start] panel port ${panelPort} is already in use — another Andy MCP instance is probably still running`);
+    console.error(`[start] Windows: run \`netstat -ano | findstr ":${panelPort}"\`, then stop only that PID with \`taskkill /PID <PID> /T /F\`; or set PANEL_PORT in .env`);
+  } else {
+    console.error(`[start] panel failed to listen on 127.0.0.1:${panelPort}: ${e.message}`);
+  }
+  process.exitCode = 1;
+  shutdown();
+}
+
+if (panel) {
+  const panelUrl = `http://127.0.0.1:${panelPort}/?t=${panelToken}`;
+  // Escape hatch for automated runs (bootstrap smoke tests) that must not pop a browser window — off by default, normal `npm start` is unaffected.
+  if (process.env.MCP_SKIP_BROWSER_OPEN) {
+    console.log(`[start] MCP_SKIP_BROWSER_OPEN set — not opening a browser (panel: ${panelUrl})`);
+  } else {
+    try {
+      await openBrowser(panelUrl);
+    } catch (e) {
+      console.error(`[start] could not auto-open the panel (open manually: ${panelUrl}): ${e.message}`);
+    }
   }
 }
 

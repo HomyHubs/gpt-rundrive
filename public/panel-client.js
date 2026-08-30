@@ -291,8 +291,9 @@ async function loadTailscale() {
   const s = await api('GET', '/api/tailscale');
   mark('tsInstalled', s.installed);
   mark('tsFunnel', s.funnel);
-  if (!s.installed) return 'tailscale command not found on this machine';
-  if (!s.funnel) return 'Tailscale is installed, Funnel for port 9999 is still missing';
+  if (!s.installed) return 'tailscale.exe not found in PATH or the standard Windows install folders';
+  if (!s.running) return 'Tailscale is installed but its service is stopped or the account is not signed in' + (s.error ? ': ' + s.error : '');
+  if (!s.funnel) return 'Tailscale is running, but Funnel for the MCP port is still missing' + (s.error ? ': ' + s.error : '');
   return 'ready: ' + (s.host || 'domain not available yet');
 }
 

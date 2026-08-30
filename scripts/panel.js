@@ -222,7 +222,7 @@ const ROUTES = {
   },
 };
 
-export function startPanel({ port, token, origin, ingress, client, passphrase, updateInfo }) {
+export function startPanel({ port, token, origin, ingress, client, passphrase, updateInfo, onFatal }) {
   const server = http.createServer(async (req, res) => {
     const [urlPath, query] = (req.url || '').split('?');
     const route = `${req.method} ${urlPath}`;
@@ -249,6 +249,19 @@ export function startPanel({ port, token, origin, ingress, client, passphrase, u
     }
   });
 
-  server.listen(port, '127.0.0.1', () => console.log(`[panel] http://127.0.0.1:${port}/?t=${token}`));
-  return server;
+  // Wait for the socket to bind before start.js opens the browser. Without this, EADDRINUSE
+  // was emitted as an unhandled event after startup had already printed/opened a stale panel URL.
+  return new Promise((resolve, reject) => {
+    const onListenError = (error) => reject(error);
+    server.once('error', onListenError);
+    server.listen(port, '127.0.0.1', () => {
+      server.off('error', onListenError);
+      server.on('error', (error) => {
+        console.error(`[panel] server error on 127.0.0.1:${port}: ${error.message}`);
+        onFatal?.(error);
+      });
+      console.log(`[panel] http://127.0.0.1:${port}/?t=${token}`);
+      resolve(server);
+    });
+  });
 }
