@@ -95,7 +95,7 @@ document.addEventListener('click', (e) => {
 });
 
 function localPath(base, ...parts) {
-  const separator = base.includes('\\\\') ? '\\\\' : '/';
+  const separator = base.includes('\\') ? '\\' : '/';
   return [base, ...parts].join(separator);
 }
 
