@@ -94,8 +94,13 @@ document.addEventListener('click', (e) => {
   });
 });
 
+function localPath(base, ...parts) {
+  const separator = base.includes('\\\\') ? '\\\\' : '/';
+  return [base, ...parts].join(separator);
+}
+
 function buildPrompt() {
-  const lines = ['[akimcp ' + MCP_VERSION + ' · akidevrule ' + RULE_VERSION + '] ALWAYS short dense on-point. DON\'T YAPPING. Claim=evidence; search=citation.'];
+  const lines = ['[andymcp ' + MCP_VERSION + ' · rules ' + RULE_VERSION + '] ALWAYS short dense on-point. DON\'T YAPPING. Claim=evidence; search=citation.'];
   const picked = document.getElementById('loadRules').checked
     ? [...document.querySelectorAll('#ruleChecks input:checked')].map((i) => i.value)
     : [];
@@ -107,11 +112,11 @@ function buildPrompt() {
   if (rulesOn && !hasIndex) {
     lines.push('No rule files are installed; continue without loading rule files.');
   }
-  lines.push('Task (mutate/multi-step): confirm scope; plan $HOME/.aki/mcpsv/task/<id>/plan.md (live); reply path on create. Skip pure Q&A. <id>=short slug.');
+  lines.push('Task (mutate/multi-step): confirm scope; plan ' + localPath(USER_DIR, 'task', '<id>', 'plan.md') + ' (live); reply path on create. Skip pure Q&A. <id>=short slug.');
   lines.push('Files: always find_path (1 call, whole tree ~0.2s), never list_directory nor search_files. Text: search_content. git/ls/grep: run_cmd cwd=absolute under an allowed root, never cd/-C.');
-  lines.push('Repo: ' + REPO_ROOT + '. local paths=Aki MCP FS only; sandbox throwaway; after write read-back MCP.');
-  lines.push('First session: if no ' + USER_DIR + '/intro.json, read ' + REPO_ROOT + '/docs/ref/mcp-intro.md once then write intro.json {"seen":true}.');
-  lines.push('Also read ' + USER_DIR + '/aki-mcp-status.json; if its mcp.current/rule.current differ from the [akimcp·akidevrule] line above or any updateAvailable is true, tell me to update in the Aki panel and re-paste these instructions into the custom-instructions setting of each AI (claude/grok/chatgpt/gemini).');
+  lines.push('Repo: ' + REPO_ROOT + '. local paths=Andy MCP FS only; sandbox throwaway; after write read-back MCP.');
+  lines.push('First session: if no ' + localPath(USER_DIR, 'intro.json') + ', read ' + localPath(REPO_ROOT, 'README.md') + ' once then write intro.json {"seen":true}.');
+  lines.push('Also read ' + localPath(USER_DIR, 'andy-mcp-status.json') + '; if its mcp.current/rule.current differ from the [andymcp·rules] line above or any updateAvailable is true, tell me to update in the Andy panel and re-paste these instructions into the custom-instructions setting of each AI (claude/grok/chatgpt/gemini).');
   const value = lines.join('\n');
   document.getElementById('prompt').value = value;
   const over = value.length > 1500;
@@ -127,7 +132,7 @@ function markDirty() {
 }
 
 // Deleting a rule-zone row would silently cut the AI off from its rules, so those rows are locked, not deletable.
-const isProtectedPath = (p) => p === RULES_DIR || p === CLAUDE_DIR || p === AKI_DIR;
+const isProtectedPath = (p) => p === RULES_DIR || p === CLAUDE_DIR || p === ANDY_DIR;
 
 function addPath(value, dirty) {
   const wrap = document.createElement('div');
