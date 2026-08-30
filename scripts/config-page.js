@@ -48,7 +48,7 @@ export function renderPanel({ origin, ingress = 'funnel', client, passphrase, to
   // "Own update on top, rule update below" per the request; the rule row carries the re-paste warning because updating the corpus makes every pasted instruction stale.
   const updateBanner = (mcpUpd.updateAvailable || ruleUpd.updateAvailable) ? `<div class="updbar">
   ${mcpUpd.updateAvailable ? `<div class="updrow"><strong>aki-mcp-sv</strong> <span class="mono">${esc(String(mcpUpd.current))} → ${esc(String(mcpUpd.latest))}</span> ${hasGit ? '<button class="primary" data-act="pullUpdate">Pull &amp; restart</button>' : `<a class="btnlink" href="${MCP_REPO_URL}" target="_blank" rel="noopener">Download ↗</a>`}<span class="msg" id="msgUpd"></span></div>` : ''}
-  ${ruleUpd.updateAvailable ? `<div class="updrow updrule"><strong>akidevrule</strong> <span class="mono">${esc(String(ruleUpd.current))} → ${esc(String(ruleUpd.latest))}</span> <button class="primary" data-act="updateRules">Install / update</button><span class="msg" id="msgUpdRule"></span><div class="updwarn">⚠ After updating, RE-PASTE the section-3 Instructions into the custom-instructions setting of EACH AI: Claude / Grok / ChatGPT / Gemini.</div></div>` : ''}
+  ${ruleUpd.updateAvailable ? `<div class="updrow updrule"><strong>akidevrule</strong> <span class="mono">${esc(String(ruleUpd.current))} → ${esc(String(ruleUpd.latest))}</span> <button class="primary" data-act="updateRules">Install / update</button><span class="msg" id="msgUpdRule"></span><div class="updwarn">⚠ After updating, RE-PASTE the section-2 Instructions into the custom-instructions setting of EACH AI: Claude / Grok / ChatGPT / Gemini.</div></div>` : ''}
 </div>` : '';
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(PANEL_TITLE)} · panel</title>
@@ -63,8 +63,8 @@ ${updateBanner}
 <ol class="steps-nav">
   <li class="step${origin ? ' done' : ''}"><a href="#s0"><span class="step-n">${origin ? '✓' : '0'}</span> Setup</a></li>
   <li class="step"><a href="#s1"><span class="step-n">1</span> Connectors</a></li>
-  <li class="step"><a href="#s3"><span class="step-n">3</span> Instructions</a></li>
-  <li class="step opt"><a href="#s4"><span class="step-n">4</span> Extension <em>optional</em></a></li>
+  <li class="step"><a href="#s2"><span class="step-n">2</span> Instructions</a></li>
+  <li class="step opt"><a href="#s3"><span class="step-n">3</span> Extension <em>optional</em></a></li>
 </ol>
 </section>
 
@@ -177,7 +177,7 @@ ${field('Passphrase', passphrase)}
 </div>
 </section>
 
-<section id="s3"><h2>3 · Instructions: choose rules &amp; copy the prompt</h2>
+<section id="s2"><h2>2 · Instructions: choose rules &amp; copy the prompt</h2>
 <p class="helptext">Choose which available rule files load, then copy the Instructions into the custom-instructions setting of each AI (links below). It teaches the AI to use this server's tools and any rules already present in the configured rules directory.</p>
 <div class="acts">
   <a class="btnlink" href="${SETTINGS_URL}" target="_blank" rel="noopener"><img src="/img/providers/claude.png" class="provider-icon" alt="">Claude ↗</a>
@@ -193,7 +193,7 @@ ${field('Passphrase', passphrase)}
 <div class="acts"><button class="primary" onclick="copyText(document.getElementById('prompt').value, this)">copy prompt</button><span class="msg" id="promptCount"></span></div>
 </section>
 
-<section id="s4"><h2>4 · Browser utilities <span class="done-tag" style="color:var(--muted);border-color:var(--line)">optional</span></h2>
+<section id="s3"><h2>3 · Browser utilities <span class="done-tag" style="color:var(--muted);border-color:var(--line)">optional</span></h2>
 <p class="helptext"><strong>Claude Token Counter</strong>: a Chrome extension that shows your hourly and weekly usage bar under claude.ai's input box, including on the Free plan, which claude.ai doesn't surface itself.</p>
 <div class="acts"><a class="btnlink" href="${esc(TOKENIZER_URL)}" target="_blank" rel="noopener">Install from Chrome Web Store ↗</a></div>
 <figure><img src="https://raw.githubusercontent.com/lacvietanh/aki-mcp-sv/38dabcc6d442f36db8279b7652eaf33f6676ef6f/public/extension-claude-usage.png" alt="Token usage bar shown under claude.ai's input box" loading="lazy"></figure>
@@ -204,7 +204,7 @@ ${field('Passphrase', passphrase)}
 ${field('Widen command', WIDEN_SNIPPET)}
 </section>
 
-<section id="s5"><h2>5 · Folders the connector may reach</h2>
+<section id="s4"><h2>4 · Folders the connector may reach</h2>
 <p class="helptext">These folders scope file tools and the shell's working directory. Allowed shell commands run with your user permissions and may access files outside this list.</p>
 <p class="helptext">The default root is your whole home folder: Desktop, Documents, Downloads, Photos, everything under it, not just projects.</p>
 <p class="helptext">Save takes effect immediately for every tool (shell, search, and file read/write/edit alike) — no restart needed.</p>
@@ -216,7 +216,7 @@ ${field('Widen command', WIDEN_SNIPPET)}
 </div>
 </section>
 
-<section id="s6"><h2>6 · Allowed shell commands</h2>
+<section id="s5"><h2>5 · Allowed shell commands</h2>
 <p class="helptext">Commands run as your user, so they can read what you can. Chips allow any subcommand; click a chip to restrict it to specific subcommands. Adding write commands (${copyEl('rm')}, ${copyEl('git commit')}…) widens access.</p>
 <input type="text" id="cmdFilter" placeholder="filter commands…">
 <div class="chips" id="cmdChips"></div>
@@ -229,7 +229,7 @@ ${field('Widen command', WIDEN_SNIPPET)}
 </div>
 
 <h3 class="subh">Trusted script directories</h3>
-<p class="helptext">Scripts under these folders run without a command row above, for Aki-authored skills and scripts. A folder that overlaps a writable folder from section 5 is disabled (write + run = code execution).</p>
+<p class="helptext">Scripts under these folders run without a command row above, for Aki-authored skills and scripts. A folder that overlaps a writable folder from section 4 is disabled (write + run = code execution).</p>
 <div class="flist" id="trustedDirs"></div>
 <div class="acts">
   <button class="primary" data-act="addTrusted">+ Add directory…</button>
