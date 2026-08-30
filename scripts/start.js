@@ -58,7 +58,7 @@ if (tunnelCred) {
   ingressMode = 'funnel';
   let tailscale = await funnelStatus(gatePort);
   if (!tailscale.installed) {
-    console.error('[start] could not run `tailscale` — check it is installed and logged in: https://tailscale.com/download');
+    console.error('[start] could not find `tailscale` in PATH or the standard Windows install folders — install it or set TAILSCALE_BIN: https://tailscale.com/download');
   } else {
     if (!tailscale.running) {
       const { ok, out } = await bringUp();
