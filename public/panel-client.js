@@ -2,26 +2,53 @@ const toTop = document.getElementById('toTop');
 toTop.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 addEventListener('scroll', () => toTop.classList.toggle('show', window.scrollY > 400), { passive: true });
 
-// Spy-TOC rail: built from the sections themselves (SSoT), so numbers/labels never drift from the page.
+// Spy-TOC rail: labels come from the visible headers, while links use the matching section IDs.
 const spy = document.getElementById('spy');
 const spySecs = [...document.querySelectorAll('main section[id]')];
 const spyLinks = {};
 spySecs.forEach((sec) => {
+  const heading = (sec.querySelector('h2')?.textContent || '').replace(/\s+(done|optional)$/i, '').trim();
   const a = document.createElement('a');
   a.href = '#' + sec.id;
-  a.textContent = sec.id.replace('s', '');
-  a.title = (sec.querySelector('h2')?.textContent || sec.id).replace(/\s+(done|optional)$/i, '').trim();
+  a.textContent = heading.match(/^(\d+)\s*·/)?.[1] || sec.id.replace(/^s/, '');
+  a.title = heading || sec.id;
+  a.onclick = (event) => {
+    event.preventDefault();
+    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    history.replaceState(null, '', '#' + sec.id);
+  };
   spy.append(a);
   spyLinks[sec.id] = a;
 });
-const spyObs = new IntersectionObserver((entries) => {
-  entries.forEach((e) => {
-    if (!e.isIntersecting) return;
-    for (const a of Object.values(spyLinks)) a.classList.remove('active');
-    spyLinks[e.target.id]?.classList.add('active');
+
+// IntersectionObserver could select the wrong item when a section was taller than the viewport,
+// several entries changed in one callback, or the last section could not reach the tiny center band.
+// Pick the last heading above a stable viewport marker instead, and force the last item at page end.
+function updateSpy() {
+  if (!spySecs.length) return;
+  const marker = Math.min(window.innerHeight * 0.35, 240);
+  let active = spySecs[0];
+  for (const sec of spySecs) {
+    if (sec.getBoundingClientRect().top <= marker) active = sec;
+    else break;
+  }
+  if (Math.ceil(window.scrollY + window.innerHeight) >= document.documentElement.scrollHeight - 2) {
+    active = spySecs[spySecs.length - 1];
+  }
+  for (const [id, a] of Object.entries(spyLinks)) a.classList.toggle('active', id === active.id);
+}
+
+let spyFrame = null;
+function scheduleSpyUpdate() {
+  if (spyFrame !== null) return;
+  spyFrame = requestAnimationFrame(() => {
+    spyFrame = null;
+    updateSpy();
   });
-}, { rootMargin: '-45% 0px -50% 0px' });
-spySecs.forEach((s) => spyObs.observe(s));
+}
+addEventListener('scroll', scheduleSpyUpdate, { passive: true });
+addEventListener('resize', scheduleSpyUpdate);
+updateSpy();
 
 async function api(method, path, body) {
   let res;
@@ -67,8 +94,13 @@ document.addEventListener('click', (e) => {
   });
 });
 
+function localPath(base, ...parts) {
+  const separator = base.includes('\\') ? '\\' : '/';
+  return [base, ...parts].join(separator);
+}
+
 function buildPrompt() {
-  const lines = ['[akimcp ' + MCP_VERSION + ' · akidevrule ' + RULE_VERSION + '] ALWAYS short dense on-point. DON\'T YAPPING. Claim=evidence; search=citation.'];
+  const lines = ['[andymcp ' + MCP_VERSION + ' · rules ' + RULE_VERSION + '] ALWAYS short dense on-point. DON\'T YAPPING. Claim=evidence; search=citation.'];
   const picked = document.getElementById('loadRules').checked
     ? [...document.querySelectorAll('#ruleChecks input:checked')].map((i) => i.value)
     : [];
@@ -80,11 +112,11 @@ function buildPrompt() {
   if (rulesOn && !hasIndex) {
     lines.push('No rule files are installed; continue without loading rule files.');
   }
-  lines.push('Task (mutate/multi-step): confirm scope; plan $HOME/.aki/mcpsv/task/<id>/plan.md (live); reply path on create. Skip pure Q&A. <id>=short slug.');
+  lines.push('Task (mutate/multi-step): confirm scope; plan ' + localPath(USER_DIR, 'task', '<id>', 'plan.md') + ' (live); reply path on create. Skip pure Q&A. <id>=short slug.');
   lines.push('Files: always find_path (1 call, whole tree ~0.2s), never list_directory nor search_files. Text: search_content. git/ls/grep: run_cmd cwd=absolute under an allowed root, never cd/-C.');
-  lines.push('Repo: ' + REPO_ROOT + '. local paths=Aki MCP FS only; sandbox throwaway; after write read-back MCP.');
-  lines.push('First session: if no ' + USER_DIR + '/intro.json, read ' + REPO_ROOT + '/docs/ref/mcp-intro.md once then write intro.json {"seen":true}.');
-  lines.push('Also read ' + USER_DIR + '/aki-mcp-status.json; if its mcp.current/rule.current differ from the [akimcp·akidevrule] line above or any updateAvailable is true, tell me to update in the Aki panel and re-paste these instructions into the custom-instructions setting of each AI (claude/grok/chatgpt/gemini).');
+  lines.push('Repo: ' + REPO_ROOT + '. local paths=Andy MCP FS only; sandbox throwaway; after write read-back MCP.');
+  lines.push('First session: if no ' + localPath(USER_DIR, 'intro.json') + ', read ' + localPath(REPO_ROOT, 'README.md') + ' once then write intro.json {"seen":true}.');
+  lines.push('Also read ' + localPath(USER_DIR, 'andy-mcp-status.json') + '; if its mcp.current/rule.current differ from the [andymcp·rules] line above or any updateAvailable is true, tell me to update in the Andy panel and re-paste these instructions into the custom-instructions setting of each AI (claude/grok/chatgpt/gemini).');
   const value = lines.join('\n');
   document.getElementById('prompt').value = value;
   const over = value.length > 1500;
@@ -100,7 +132,7 @@ function markDirty() {
 }
 
 // Deleting a rule-zone row would silently cut the AI off from its rules, so those rows are locked, not deletable.
-const isProtectedPath = (p) => p === RULES_DIR || p === CLAUDE_DIR || p === AKI_DIR;
+const isProtectedPath = (p) => p === RULES_DIR || p === CLAUDE_DIR || p === ANDY_DIR;
 
 function addPath(value, dirty) {
   const wrap = document.createElement('div');

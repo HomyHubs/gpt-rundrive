@@ -4,7 +4,7 @@ import path from 'node:path';
 import { esc } from './html.js';
 
 const CLAUDE_DIR = path.join(os.homedir(), '.claude');
-const AKI_DIR = path.join(os.homedir(), '.aki');
+const ANDY_DIR = path.join(os.homedir(), '.andymcp');
 const PANEL_TITLE = 'Andy MCP Server';
 const MCP_NAME = 'Andy MCP Server Access Files on Local Disk';
 const SETTINGS_URL = 'https://claude.ai/new#settings/general';
@@ -47,8 +47,8 @@ export function renderPanel({ origin, ingress = 'funnel', client, passphrase, to
   const ruleVer = ruleUpd.current || '?';
   // "Own update on top, rule update below" per the request; the rule row carries the re-paste warning because updating the corpus makes every pasted instruction stale.
   const updateBanner = (mcpUpd.updateAvailable || ruleUpd.updateAvailable) ? `<div class="updbar">
-  ${mcpUpd.updateAvailable ? `<div class="updrow"><strong>aki-mcp-sv</strong> <span class="mono">${esc(String(mcpUpd.current))} → ${esc(String(mcpUpd.latest))}</span> ${hasGit ? '<button class="primary" data-act="pullUpdate">Pull &amp; restart</button>' : `<a class="btnlink" href="${MCP_REPO_URL}" target="_blank" rel="noopener">Download ↗</a>`}<span class="msg" id="msgUpd"></span></div>` : ''}
-  ${ruleUpd.updateAvailable ? `<div class="updrow updrule"><strong>akidevrule</strong> <span class="mono">${esc(String(ruleUpd.current))} → ${esc(String(ruleUpd.latest))}</span> <button class="primary" data-act="updateRules">Install / update</button><span class="msg" id="msgUpdRule"></span><div class="updwarn">⚠ After updating, RE-PASTE the section-2 Instructions into the custom-instructions setting of EACH AI: Claude / Grok / ChatGPT / Gemini.</div></div>` : ''}
+  ${mcpUpd.updateAvailable ? `<div class="updrow"><strong>Andy MCP Server</strong> <span class="mono">${esc(String(mcpUpd.current))} → ${esc(String(mcpUpd.latest))}</span> ${hasGit ? '<button class="primary" data-act="pullUpdate">Pull &amp; restart</button>' : `<a class="btnlink" href="${MCP_REPO_URL}" target="_blank" rel="noopener">Download ↗</a>`}<span class="msg" id="msgUpd"></span></div>` : ''}
+  ${ruleUpd.updateAvailable ? `<div class="updrow updrule"><strong>Rules</strong> <span class="mono">${esc(String(ruleUpd.current))} → ${esc(String(ruleUpd.latest))}</span> <button class="primary" data-act="updateRules">Install / update</button><span class="msg" id="msgUpdRule"></span><div class="updwarn">⚠ After updating, RE-PASTE the section-2 Instructions into the custom-instructions setting of EACH AI: Claude / Grok / ChatGPT / Gemini.</div></div>` : ''}
 </div>` : '';
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(PANEL_TITLE)} · panel</title>
@@ -81,7 +81,7 @@ ${updateBanner}
 <p>Complete these one-time prerequisites in order.</p>
 <p class="helptext">You're viewing this panel, so the first three below are already done; the two Tailscale checks are live.</p>
 <ol class="steps">
-  <li><span class="dot ok">✓</span> Clone / download the <span class="mono">aki-mcp-sv</span> repo.</li>
+  <li><span class="dot ok">✓</span> Clone / download the <span class="mono">gpt-rundrive</span> repo.</li>
   <li><span class="dot ok">✓</span> ${copyEl('npm install')}.</li>
   <li><span class="dot ok">✓</span> ${copyEl('npm start')}, running now.</li>
   <li><span class="dot" id="tsInstalled">…</span> <a href="${TAILSCALE_DOWNLOAD_URL}" target="_blank" rel="noopener">Install Tailscale</a> and sign in.</li>
@@ -229,7 +229,7 @@ ${field('Widen command', WIDEN_SNIPPET)}
 </div>
 
 <h3 class="subh">Trusted script directories</h3>
-<p class="helptext">Scripts under these folders run without a command row above, for Aki-authored skills and scripts. A folder that overlaps a writable folder from section 4 is disabled (write + run = code execution).</p>
+<p class="helptext">Scripts under these folders run without a command row above, for Andy MCP-authored skills and scripts. A folder that overlaps a writable folder from section 4 is disabled (write + run = code execution).</p>
 <div class="flist" id="trustedDirs"></div>
 <div class="acts">
   <button class="primary" data-act="addTrusted">+ Add directory…</button>
@@ -246,7 +246,7 @@ ${field('Widen command', WIDEN_SNIPPET)}
 const TOKEN = ${JSON.stringify(token)};
 const RULES_DIR = ${JSON.stringify(rulesDir)};
 const CLAUDE_DIR = ${JSON.stringify(CLAUDE_DIR)};
-const AKI_DIR = ${JSON.stringify(AKI_DIR)};
+const ANDY_DIR = ${JSON.stringify(ANDY_DIR)};
 const USER_DIR = ${JSON.stringify(userDir)};
 const REPO_ROOT = ${JSON.stringify(repoRoot)};
 const MCP_NAME = ${JSON.stringify(MCP_NAME)};

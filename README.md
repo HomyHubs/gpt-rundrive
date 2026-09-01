@@ -37,7 +37,7 @@ npm start
 
 ### 1. Configure your test commands
 
-Edit `setting.json` in the server's user-data dir (`~/.aki/mcpsv/setting.json`) and add a `test.commands` map. Each key is a name; each value is the command as an array of `[binary, ...args]`:
+Edit `setting.json` in the server's user-data dir (`~/.andymcp/mcpsv/setting.json`) and add a `test.commands` map. Each key is a name; each value is the command as an array of `[binary, ...args]`:
 
 ```json
 {
@@ -51,6 +51,10 @@ Edit `setting.json` in the server's user-data dir (`~/.aki/mcpsv/setting.json`) 
 ```
 
 On Windows you may need the `.cmd` shim, e.g. `["npm.cmd", "test"]`.
+
+### Legacy data migration
+
+On the first start after this update, Andy MCP copies existing config, OAuth credentials, tokens, passphrase, ingress settings, and installed rules from `~/.aki` into `~/.andymcp`. Stored folder and trusted-directory paths are rewritten to the new root. The old `~/.aki` data is left untouched as a rollback copy, and existing files under `~/.andymcp` are never overwritten.
 
 ### 2. Call it from the chat
 

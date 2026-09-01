@@ -83,7 +83,7 @@ export function register(server) {
     'find_path',
     {
       title: 'Find Path',
-      description: `Find files AND directories anywhere under ${root} in one call — use this first when locating a project, repo, or file by name, instead of walking directories one level at a time. query is a case-insensitive substring by default ("mcp" finds aki-mcp-sv), or a glob when it contains * or ? ("*.config.js", "src/**/*.ts"). Globs without a slash match the basename. Skips node_modules/.git/build output automatically. Directories come back with a trailing slash.`,
+      description: `Find files AND directories anywhere under ${root} in one call — use this first when locating a project, repo, or file by name, instead of walking directories one level at a time. query is a case-insensitive substring by default ("mcp" finds gpt-rundrive), or a glob when it contains * or ? ("*.config.js", "src/**/*.ts"). Globs without a slash match the basename. Skips node_modules/.git/build output automatically. Directories come back with a trailing slash.`,
       inputSchema: {
         query: z.string(),
         path: z.string().optional().describe('subdirectory to search under, absolute or relative to the root'),

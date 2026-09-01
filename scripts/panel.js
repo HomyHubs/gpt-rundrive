@@ -3,21 +3,18 @@
 import http from 'node:http';
 import { execFile } from 'node:child_process';
 import { readFileSync, writeFileSync, renameSync, mkdirSync, existsSync, readdirSync, unlinkSync } from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { renderPanel } from './config-page.js';
 import { loadAllowlist, loadAllowlistDirs, readSettings, DEFAULT_ALLOWLIST } from './allowlist.js';
 import { getRoots, overlaps } from './roots.js';
 import { funnelStatus } from './tailscale.js';
-import { SETTINGS_PATH, USER_DIR, INGRESS_CONFIG_PATH, CLOUDFLARED_CRED_PATH, readIngressConfig } from './userdata.js';
+import { SETTINGS_PATH, USER_DIR, RULES_DIR, RULES_CLONE_DIR, INGRESS_CONFIG_PATH, CLOUDFLARED_CRED_PATH, readIngressConfig } from './userdata.js';
 import { readBody, json, serveStatic } from './http.js';
 import { getLocalVersions, cmpSemver, writeStatusFile } from './update-check.js';
 
 const IS_WIN = process.platform === 'win32';
 const REPO_ROOT = process.cwd();
-const RULES_DIR = path.join(os.homedir(), '.aki', 'akidevrule');
 const SOURCE_REPO_FILE = path.join(RULES_DIR, '.source-repo');
-const RULES_CLONE_DIR = path.join(os.homedir(), '.aki', 'akidevrule-src');
 const RULES_REPO_URL = 'https://github.com/lacvietanh/akidevrule.git';
 
 function writeJsonAtomic(file, data) {

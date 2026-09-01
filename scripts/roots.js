@@ -4,14 +4,14 @@ import os from 'node:os';
 import path from 'node:path';
 import { loadFolders } from './allowlist.js';
 
-// Fallback when setting.json carries no `folders` key yet (fresh install, or a folder edit was never saved via the panel): reconstructs the same default the old boot-time MCP_DATA_DIR env var used to expand to (dataDir + ~/.aki + ~/.claude), so behavior is unchanged until the first save — including the rule/config dirs the panel's own prompt-builder tells the AI to read.
+// Fallback when setting.json carries no `folders` key yet (fresh install, or a folder edit was never saved via the panel): reconstructs the same default the old boot-time MCP_DATA_DIR env var used to expand to (dataDir + ~/.andymcp + ~/.claude), so behavior is unchanged until the first save — including the rule/config dirs the panel's own prompt-builder tells the AI to read.
 function envDefaultRoots() {
   const base = (process.env.MCP_DATA_DIR || os.homedir())
     .split(',')
     .map((p) => p.trim())
     .filter(Boolean)
     .map((p) => path.resolve(p));
-  const always = [path.join(os.homedir(), '.aki'), path.join(os.homedir(), '.claude')];
+  const always = [path.join(os.homedir(), '.andymcp'), path.join(os.homedir(), '.claude')];
   return [...new Set([...(base.length ? base : [path.resolve(os.homedir())]), ...always])];
 }
 
