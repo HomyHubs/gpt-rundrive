@@ -15,6 +15,16 @@ import { ok, err, fail } from './mcp-tool.js';
 
 const DEFAULT_TIMEOUT_MS = 300_000; // 5 min — real suites need far more than shell-mcp's 10s cap
 const MAX_BUFFER = 8 * 1024 * 1024; // 8MB — test output is verbose; 1MB truncates it
+const PASS_TAIL_LINES = 25; // a green run only needs its summary; the 8MB buffer is there for failures
+
+// The buffer stays large because a failure's stack traces are the whole point, but a *passing* suite's
+// output is pure cost: nobody acts on 900 green lines. Trim at the source rather than relying on the
+// generic output budget, so the model still gets the full failure text when it matters.
+function passSummary(out) {
+  const lines = out.split('\n');
+  if (lines.length <= PASS_TAIL_LINES) return out;
+  return `… ${lines.length - PASS_TAIL_LINES} earlier line(s) omitted (suite passed)\n${lines.slice(-PASS_TAIL_LINES).join('\n')}`;
+}
 
 // setting.json -> { "test": { "commands": { "<name>": ["bin", "arg", ...] } } }. An owner-configured
 // map is the only source of runnable commands, so a prompt can never invent an arbitrary command line.
@@ -31,7 +41,7 @@ function run(bin, args, cwd, timeout) {
         const why = error.killed ? `timed out after ${timeout}ms` : `exit code ${error.code ?? 'n/a'}`;
         return resolve(err(`FAIL (${why})\n\n${out}`));
       }
-      resolve(ok(`PASS\n\n${out}`));
+      resolve(ok(`PASS\n\n${passSummary(out)}`));
     });
   });
 }
@@ -42,9 +52,10 @@ export function register(server) {
     {
       title: 'Run Test Suite',
       description:
-        "Run a project's pre-configured test command and return PASS/FAIL plus the full output. " +
+        "Run a project's pre-configured test command and return PASS/FAIL. On failure you get the full output; " +
+        'on success only the last lines, since a green run needs no reading. ' +
         'The command name maps to setting.json -> test.commands; nothing runs unless it was configured there ' +
-        '(e.g. {"test":{"commands":{"myproj":["npm","test"]}}}). Use this in a run -> read failure -> edit_file -> ' +
+        '(e.g. {"test":{"commands":{"myproj":["npm","test"]}}}). Use this in a run -> read failure -> edit_files -> ' +
         're-run loop to fix failing tests. Longer timeout (5 min) and a bigger output buffer than run_cmd.',
       inputSchema: {
         name: z.string().describe('key under setting.json test.commands'),
